@@ -15,6 +15,7 @@ interface GameState {
   remainingAttempts: number;
   guessCount: number;
   wellPlacedLetters: { letter: string; position: number }[];
+  errorMessage: string | null;
   handleLetter: (letter: string) => void;
   handleDelete: () => void;
   handleSubmit: () => void;
@@ -49,7 +50,6 @@ export function useGame(): GameState {
   const [guessCount, setGuessCount] = useState(0);
   const [wellPlacedLetters, setWellPlacedLetters] = useState<{ letter: string; position: number }[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
 
   const today = new Date().toISOString().split('T')[0];
   const userId = getUserIdFromToken();
@@ -93,6 +93,7 @@ export function useGame(): GameState {
 
     init();
   }, []);
+
   useEffect(() => {
     if (errorMessage) {
       const timer = setTimeout(() => {
@@ -152,7 +153,6 @@ export function useGame(): GameState {
       setRemainingAttempts(res.data.remainingAttempts);
       setCurrentGuess(firstLetter.toLowerCase());
   
-      // ✅ On reset l’erreur si tout s’est bien passé
       setErrorMessage(null);
   
       const updatedState = {
@@ -170,7 +170,6 @@ export function useGame(): GameState {
       if (axios.isAxiosError(e)) {
         const msg = e.response?.data?.message || 'Erreur';
   
-        // ✅ Vérifie si le backend a rejeté car le mot n’existe pas
         if (msg.includes('dictionnaire') || msg.toLowerCase().includes('n’existe pas')) {
           setErrorMessage('Ce mot n’existe pas dans le dictionnaire.');
         } else {
@@ -214,9 +213,9 @@ export function useGame(): GameState {
     remainingAttempts,
     guessCount,
     wellPlacedLetters,
+    errorMessage,
     handleLetter,
     handleDelete,
     handleSubmit,
-    errorMessage, 
   };
 }
